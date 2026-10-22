@@ -327,78 +327,114 @@
     .count-anim { display: inline-block; }
 
     /* ══════════════════════════════════════
-       TIMELINE
+       EXPERIENCE SHOWCASE (one at a time)
     ══════════════════════════════════════ */
-    .timeline { position: relative; padding-left: 28px; }
-
-    /* The vertical line draws itself downward */
-    .timeline::before {
-      content: '';
-      position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px;
-      background: linear-gradient(180deg, var(--accent) 0%, var(--accent3) 60%, transparent 100%);
-      border-radius: 2px;
-      transform-origin: top;
-      transform: scaleY(0);
-      transition: transform 1.2s cubic-bezier(0.4,0,0.2,1);
+    .exp-showcase {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
     }
-    .timeline.line-visible::before { transform: scaleY(1); }
 
-    /* Each item starts invisible, slides from left */
-    .timeline-item {
-      position: relative; margin-bottom: 32px;
+    /* Progress strip at top */
+    .exp-progress-bar {
+      display: flex; gap: 6px; margin-bottom: 24px;
+    }
+    .exp-progress-seg {
+      flex: 1; height: 3px; border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden; cursor: pointer;
+    }
+    .exp-progress-seg .seg-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 999px;
+      transition: width 0.1s linear;
+    }
+    .exp-progress-seg.active .seg-fill { width: 100%; }
+    .exp-progress-seg.done .seg-fill { width: 100%; background: var(--accent); }
+
+    /* Card stage */
+    .exp-stage {
+      position: relative;
+      min-height: 260px;
+    }
+
+    /* Each experience card */
+    .exp-card {
+      position: absolute; inset: 0;
+      background: rgba(8,12,28,0.68);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(0,198,255,0.15);
+      border-radius: var(--radius);
+      padding: 32px 36px;
       opacity: 0;
-      transform: translateX(-36px);
-      transition: opacity 0.65s cubic-bezier(0.4,0,0.2,1),
-                  transform 0.65s cubic-bezier(0.4,0,0.2,1);
+      pointer-events: none;
+      transform: translateX(60px) scale(0.97);
+      transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.55s cubic-bezier(0.4,0,0.2,1);
     }
-    .timeline-item.tl-visible { opacity: 1; transform: translateX(0); }
-
-    /* The dot: starts small and dark, pops in with the item */
-    .timeline-item::before {
-      content: '';
-      position: absolute; left: -33px; top: 5px;
-      width: 12px; height: 12px; border-radius: 50%;
-      background: var(--accent); border: 2px solid #050a18;
-      box-shadow: 0 0 0px var(--accent);
-      transform: scale(0);
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s,
-                  box-shadow 0.4s ease 0.2s;
+    .exp-card.active {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(0) scale(1);
     }
-    .timeline-item.tl-visible::before {
-      transform: scale(1);
-      box-shadow: 0 0 10px var(--accent);
-      animation: pulse-dot 2s 0.6s infinite;
-    }
-
-    /* Number badge that appears on each item */
-    .tl-num {
-      position: absolute; left: -44px; top: 2px;
-      width: 10px;
-      font-size: 0.6rem; font-weight: 800;
-      color: var(--accent); opacity: 0;
-      transition: opacity 0.4s 0.5s;
-      text-align: right;
-    }
-    .timeline-item.tl-visible .tl-num { opacity: 0.5; }
-
-    .timeline-item h3 { font-size: 1rem; font-weight: 700; color: #fff; }
-    .timeline-item .tl-meta {
-      font-size: 0.76rem; color: var(--accent); margin: 4px 0 9px; font-weight: 600; letter-spacing: 0.5px;
-    }
-    .timeline-item p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; }
-
-    /* Highlight bar that sweeps across the item on reveal */
-    .timeline-item .tl-highlight {
-      position: absolute;
-      inset: -6px -12px;
-      border-radius: 10px;
-      background: linear-gradient(90deg, rgba(0,198,255,0.07), transparent);
+    .exp-card.exit-left {
       opacity: 0;
-      transform: translateX(-20px);
-      transition: opacity 0.5s 0.15s, transform 0.5s 0.15s;
+      transform: translateX(-60px) scale(0.97);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    /* Card internals */
+    .exp-card-num {
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--accent); opacity: 0.6;
+      margin-bottom: 6px;
+    }
+    .exp-card-role {
+      font-size: 1.25rem; font-weight: 800; color: #fff;
+      margin-bottom: 6px; line-height: 1.2;
+    }
+    .exp-card-meta {
+      font-size: 0.78rem; color: var(--accent); font-weight: 600;
+      letter-spacing: 0.5px; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .exp-card-meta::before {
+      content: '';
+      display: inline-block; width: 24px; height: 2px;
+      background: var(--accent); border-radius: 2px;
+    }
+    .exp-card-desc {
+      font-size: 0.88rem; color: var(--muted); line-height: 1.75;
+    }
+    .exp-card-glow {
+      position: absolute; inset: 0; border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(0,114,255,0.06), transparent 60%);
       pointer-events: none;
     }
-    .timeline-item.tl-visible .tl-highlight { opacity: 1; transform: translateX(0); }
+
+    /* Nav buttons */
+    .exp-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 20px;
+    }
+    .exp-nav-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(0,198,255,0.25);
+      background: rgba(8,12,28,0.6);
+      color: var(--accent); font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+    .exp-nav-btn:hover:not(:disabled) {
+      background: rgba(0,198,255,0.15); border-color: var(--accent);
+      transform: scale(1.1);
+    }
+    .exp-nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .exp-counter {
+      font-size: 0.78rem; color: var(--muted); letter-spacing: 2px;
+    }
+    .exp-counter span { color: var(--accent); font-weight: 700; }
 
     /* ══════════════════════════════════════
        SKILL PILLS
@@ -648,50 +684,70 @@
     <section id="experience">
       <div class="section-label reveal">Career Journey</div>
       <h2 class="section-title reveal" style="transition-delay:0.1s">Professional Experience</h2>
-      <div class="card reveal" style="max-width:800px;transition-delay:0.2s">
-        <div class="timeline" id="exp-timeline">
-          <div class="timeline-item">
-            <div class="tl-highlight"></div>
-            <span class="tl-num">01</span>
-            <h3>AI/GenAI Solution Lead</h3>
-            <div class="tl-meta">Oil &amp; Gas Clients · AI-powered Supply Chain</div>
-            <p>Built an AI-powered Supply Chain Dashboard providing a real-time cross-module view of PP, MM and SD
-            disruptions, with a natural-language What-If AI agent to enable faster impact assessment and proactive
-            business decisions.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="tl-highlight"></div>
-            <span class="tl-num">02</span>
-            <h3>Lead Cloud Portal &amp; BTP Validation</h3>
-            <div class="tl-meta">SAP Cloud Portal &amp; BTP · Neo &amp; Cloud Foundry</div>
-            <p>Led full lifecycle validation of SAP Cloud Portal and BTP missions. Developed full-stack CAP applications
-            with UI5, established reusable frameworks and quality standards, accelerating cloud adoption.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="tl-highlight"></div>
-            <span class="tl-num">03</span>
-            <h3>Principal Developer — Performance &amp; Automation</h3>
-            <div class="tl-meta">SAP BW on HANA · EPM Scenarios</div>
-            <p>Led performance optimization and validation using ABAP CDS views. Designed analytical demo content and
-            implemented automation workflows to streamline validation and reduce manual effort.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="tl-highlight"></div>
-            <span class="tl-num">04</span>
-            <h3>UI Testing Lead — NetWeaver</h3>
-            <div class="tl-meta">SAP Internal / Product Teams · UI Technologies</div>
-            <p>Led end-to-end validation of SAP NetWeaver UI technologies — Web Dynpro ABAP/Java, PLS, NWBC, FPM,
-            C-Tools. Standardized validation processes to reduce manual effort and improve regression detection.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="tl-highlight"></div>
-            <span class="tl-num">05</span>
-            <h3>SAP ABAP Developer / Module Lead</h3>
-            <div class="tl-meta">Oil &amp; Gas Clients · SAP IS-Oil</div>
-            <p>Led development and validation of SAP R/3 IS-Oil modules: TAS, TPI, TSW, and PRA. Owned end-to-end
-            ABAP development, module design, performance optimization, and ALE/IDoc configuration.</p>
-          </div>
+
+      <div class="exp-showcase reveal" style="transition-delay:0.2s">
+
+        <!-- Progress strips -->
+        <div class="exp-progress-bar" id="exp-progress">
+          <div class="exp-progress-seg" data-idx="0"><div class="seg-fill"></div></div>
+          <div class="exp-progress-seg" data-idx="1"><div class="seg-fill"></div></div>
+          <div class="exp-progress-seg" data-idx="2"><div class="seg-fill"></div></div>
+          <div class="exp-progress-seg" data-idx="3"><div class="seg-fill"></div></div>
+          <div class="exp-progress-seg" data-idx="4"><div class="seg-fill"></div></div>
         </div>
+
+        <!-- Card stage -->
+        <div class="exp-stage" id="exp-stage">
+
+          <div class="exp-card" data-card="0">
+            <div class="exp-card-glow"></div>
+            <div class="exp-card-num">01 / 05</div>
+            <div class="exp-card-role">AI / GenAI Solution Lead</div>
+            <div class="exp-card-meta">Oil &amp; Gas Clients &nbsp;·&nbsp; AI-powered Supply Chain</div>
+            <p class="exp-card-desc">Built an AI-powered Supply Chain Dashboard providing a real-time cross-module view of PP, MM and SD disruptions, with a natural-language What-If AI agent to enable faster impact assessment and proactive business decisions.</p>
+          </div>
+
+          <div class="exp-card" data-card="1">
+            <div class="exp-card-glow"></div>
+            <div class="exp-card-num">02 / 05</div>
+            <div class="exp-card-role">Lead Cloud Portal &amp; BTP Validation</div>
+            <div class="exp-card-meta">SAP Cloud Portal &amp; BTP &nbsp;·&nbsp; Neo &amp; Cloud Foundry</div>
+            <p class="exp-card-desc">Led full lifecycle validation of SAP Cloud Portal and BTP missions. Developed full-stack CAP applications with UI5, established reusable frameworks and quality standards, accelerating cloud adoption and strengthening stakeholder confidence.</p>
+          </div>
+
+          <div class="exp-card" data-card="2">
+            <div class="exp-card-glow"></div>
+            <div class="exp-card-num">03 / 05</div>
+            <div class="exp-card-role">Principal Developer — Performance &amp; Automation</div>
+            <div class="exp-card-meta">SAP BW on HANA &nbsp;·&nbsp; EPM Scenarios</div>
+            <p class="exp-card-desc">Led performance optimization and validation using ABAP CDS views. Designed analytical demo content and end-to-end business scenarios. Implemented automation workflows to streamline validation, reduce manual effort, and ensure faster release readiness.</p>
+          </div>
+
+          <div class="exp-card" data-card="3">
+            <div class="exp-card-glow"></div>
+            <div class="exp-card-num">04 / 05</div>
+            <div class="exp-card-role">UI Testing Lead — NetWeaver</div>
+            <div class="exp-card-meta">SAP Internal / Product Teams &nbsp;·&nbsp; UI Technologies</div>
+            <p class="exp-card-desc">Led end-to-end validation of SAP NetWeaver UI technologies — Web Dynpro ABAP/Java, PLS, NWBC, FPM, C-Tools and DI. Standardized validation processes and frameworks to reduce manual effort and improve regression detection across multiple UI technologies.</p>
+          </div>
+
+          <div class="exp-card" data-card="4">
+            <div class="exp-card-glow"></div>
+            <div class="exp-card-num">05 / 05</div>
+            <div class="exp-card-role">SAP ABAP Developer / Module Lead</div>
+            <div class="exp-card-meta">Oil &amp; Gas Clients &nbsp;·&nbsp; SAP IS-Oil (R/3)</div>
+            <p class="exp-card-desc">Led development and validation of SAP R/3 IS-Oil modules: TAS, TPI (Transportation &amp; Distribution), TSW, and PRA. Owned end-to-end ABAP development, module design, performance optimization, and ALE/IDoc configuration for enterprise customers.</p>
+          </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="exp-nav">
+          <button class="exp-nav-btn" id="exp-prev" disabled>&#8592;</button>
+          <span class="exp-counter"><span id="exp-cur">1</span> of 5</span>
+          <button class="exp-nav-btn" id="exp-next">&#8594;</button>
+        </div>
+
       </div>
     </section>
 
@@ -1086,44 +1142,104 @@
   });
 
   /* ═══════════════════════════════════════════════════════
-     TIMELINE — staggered per-item animation
+     EXPERIENCE SHOWCASE — one card at a time
   ═══════════════════════════════════════════════════════ */
-  (function initTimeline() {
-    const timeline = document.getElementById('exp-timeline');
-    const items = Array.from(timeline.querySelectorAll('.timeline-item'));
-    let triggered = false;
+  (function initExpShowcase() {
+    const cards = Array.from(document.querySelectorAll('.exp-card'));
+    const segs  = Array.from(document.querySelectorAll('.exp-progress-seg'));
+    const btnPrev = document.getElementById('exp-prev');
+    const btnNext = document.getElementById('exp-next');
+    const curLabel = document.getElementById('exp-cur');
+    const TOTAL = cards.length;
+    const AUTO_MS = 4500;
 
-    const tlObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting || triggered) return;
-        triggered = true;
+    let current = 0;
+    let fillTimer = null;
+    let autoTimer = null;
+    let running = false;
 
-        // Draw the vertical line first
-        timeline.classList.add('line-visible');
+    function showCard(idx, direction) {
+      const prev = current;
+      current = (idx + TOTAL) % TOTAL;
 
-        // Then reveal each item with a staggered delay
-        items.forEach((item, i) => {
-          setTimeout(() => {
-            item.classList.add('tl-visible');
-          }, 200 + i * 220);
+      // Exit previous card
+      if (cards[prev] && prev !== current) {
+        cards[prev].classList.remove('active');
+        cards[prev].classList.add(direction === 1 ? 'exit-left' : 'exit-right');
+        setTimeout(() => cards[prev].classList.remove('exit-left', 'exit-right'), 500);
+      }
+
+      // Enter new card
+      cards[current].classList.add('active');
+
+      // Update progress segments
+      segs.forEach((s, i) => {
+        s.classList.remove('active', 'done');
+        s.querySelector('.seg-fill').style.transition = 'none';
+        s.querySelector('.seg-fill').style.width = i < current ? '100%' : '0%';
+        if (i < current) s.classList.add('done');
+      });
+
+      // Animate current segment fill
+      clearTimeout(fillTimer);
+      const activeSeg = segs[current];
+      activeSeg.classList.add('active');
+      const fill = activeSeg.querySelector('.seg-fill');
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fill.style.transition = `width ${AUTO_MS}ms linear`;
+          fill.style.width = '100%';
         });
       });
-    }, { threshold: 0.15 });
 
-    tlObserver.observe(timeline);
+      // Update counter and buttons
+      curLabel.textContent = current + 1;
+      btnPrev.disabled = current === 0;
+      btnNext.disabled = current === TOTAL - 1;
+    }
 
-    // Re-trigger if user scrolls back up past it
-    const resetObserver = new IntersectionObserver((entries) => {
+    function startAuto() {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(() => {
+        if (current < TOTAL - 1) {
+          goTo(current + 1, 1);
+        } else {
+          goTo(0, 1);
+        }
+      }, AUTO_MS);
+    }
+
+    function goTo(idx, dir) {
+      showCard(idx, dir);
+      startAuto();
+    }
+
+    btnNext.addEventListener('click', () => goTo(current + 1, 1));
+    btnPrev.addEventListener('click', () => goTo(current - 1, -1));
+
+    // Click on progress segment to jump
+    segs.forEach(seg => {
+      seg.addEventListener('click', () => goTo(parseInt(seg.dataset.idx), 1));
+    });
+
+    // Start when experience section enters viewport
+    const expObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
+        if (entry.isIntersecting && !running) {
+          running = true;
+          showCard(0, 1);
+          startAuto();
+        }
         if (!entry.isIntersecting) {
-          triggered = false;
-          timeline.classList.remove('line-visible');
-          items.forEach(item => item.classList.remove('tl-visible'));
+          running = false;
+          clearInterval(autoTimer);
         }
       });
-    }, { threshold: 0 });
+    }, { threshold: 0.3 });
 
-    resetObserver.observe(document.getElementById('experience'));
+    expObserver.observe(document.getElementById('experience'));
   })();
 
   /* ═══════════════════════════════════════════════════════
