@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anita Dixit — Dynamic Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #00c6ff;
+      --accent2: #0072ff;
+      --accent3: #a855f7;
+      --glass: rgba(8, 12, 28, 0.68);
+      --glass-light: rgba(255,255,255,0.06);
+      --text: #ffffff;
+      --muted: #c8d8f0;
+      --radius: 16px;
+      --nav-w: 230px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      background: #050a18;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════
+       DUAL BACKGROUND — crossfade via opacity
+    ══════════════════════════════════════ */
+    #bg-a, #bg-b {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      transition: opacity 1.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    #bg-a::after, #bg-b::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(2,8,30,0.58) 0%, rgba(0,0,0,0.32) 100%);
+    }
+    #bg-a { opacity: 1; }
+    #bg-b { opacity: 0; }
+
+    /* ══════════════════════════════════════
+       PARTICLES CANVAS
+    ══════════════════════════════════════ */
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════
+       TOP PROGRESS BAR
+    ══════════════════════════════════════ */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+      z-index: 200;
+      transition: width 0.15s;
+    }
+
+    /* ══════════════════════════════════════
+       AUTO-SCROLL CONTROLS
+    ══════════════════════════════════════ */
+    #autoscroll-ctrl {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 200;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .ctrl-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,198,255,0.3);
+      background: rgba(8,12,28,0.85);
+      backdrop-filter: blur(12px);
+      color: var(--accent);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+    .ctrl-btn:hover { background: rgba(0,198,255,0.15); border-color: var(--accent); transform: scale(1.1); }
+    #speed-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: rgba(8,12,28,0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 6px 14px;
+      letter-spacing: 1px;
+    }
+
+    /* ══════════════════════════════════════
+       SECTION DOTS (right side)
+    ══════════════════════════════════════ */
+    #section-dots {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0,198,255,0.4);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .dot::after {
+      content: attr(data-label);
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.7rem;
+      color: var(--accent);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      background: rgba(8,12,28,0.9);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .dot:hover::after, .dot.active::after { opacity: 1; }
+    .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.3); box-shadow: 0 0 8px var(--accent); }
+
+    /* ══════════════════════════════════════
+       SIDEBAR NAV
+    ══════════════════════════════════════ */
+    nav {
+      position: fixed;
+      left: 0; top: 0;
+      width: var(--nav-w);
+      height: 100vh;
+      background: rgba(4, 8, 22, 0.88);
+      backdrop-filter: blur(24px);
+      border-right: 1px solid rgba(0,198,255,0.1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 0 24px;
+    }
+    .nav-brand {
+      padding: 0 22px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 12px;
+    }
+    .nav-brand h2 {
+      font-size: 0.95rem; font-weight: 800;
+      background: linear-gradient(90deg, #fff, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-brand p { font-size: 0.68rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+    nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 22px;
+      color: var(--muted); text-decoration: none;
+      font-size: 0.8rem; font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all 0.25s;
+      position: relative;
+    }
+    nav a:hover, nav a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(0,198,255,0.05);
+    }
+    nav a.active { font-weight: 700; }
+    .nav-icon { font-size: 0.95rem; width: 18px; text-align: center; }
+
+    /* auto-scroll timer ring on active link */
+    nav a.active::after {
+      content: '';
+      position: absolute;
+      right: 16px; top: 50%; transform: translateY(-50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: pulse-dot 1.5s infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: translateY(-50%) scale(1); }
+      50% { opacity: 0.4; transform: translateY(-50%) scale(0.6); }
+    }
+
+    /* ══════════════════════════════════════
+       MAIN CONTENT
+    ══════════════════════════════════════ */
+    main {
+      margin-left: var(--nav-w);
+      position: relative;
+      z-index: 10;
+    }
+
+    section {
+      min-height: 100vh;
+      padding: 72px 56px 88px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── Reveal animations ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+    /* stagger children */
+    .stagger > * { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0.05s; }
+    .stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:0.15s; }
+    .stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:0.25s; }
+    .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:0.35s; }
+    .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:0.45s; }
+    .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:0.55s; }
+
+    /* ── Labels ── */
+    .section-label {
+      font-size: 0.68rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 10px; font-weight: 700;
+    }
+    h1.section-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-weight: 900; line-height: 1.05;
+      background: linear-gradient(95deg, #ffffff 0%, var(--accent) 55%, var(--accent3) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 20px;
+    }
+    h2.section-title {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; color: #fff; margin-bottom: 28px;
+    }
+
+    /* ── Glass Cards ── */
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(0,198,255,0.13);
+      border-radius: var(--radius);
+      padding: 30px 34px;
+      margin-bottom: 20px;
+    }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+
+    /* ══════════════════════════════════════
+       HERO
+    ══════════════════════════════════════ */
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(90deg, rgba(0,114,255,0.2), rgba(0,198,255,0.2));
+      border: 1px solid rgba(0,198,255,0.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 1.5px; color: var(--accent);
+      margin-bottom: 22px;
+      animation: glow-badge 3s ease-in-out infinite;
+    }
+    @keyframes glow-badge {
+      0%,100% { box-shadow: 0 0 0 rgba(0,198,255,0); }
+      50% { box-shadow: 0 0 20px rgba(0,198,255,0.25); }
+    }
+
+    /* Typewriter cursor */
+    #typewriter::after {
+      content: '|';
+      animation: blink 0.8s infinite;
+      color: var(--accent);
+      font-weight: 300;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-sub {
+      font-size: clamp(0.92rem, 1.6vw, 1.1rem);
+      color: var(--muted); margin-bottom: 36px;
+      max-width: 640px; line-height: 1.75;
+    }
+
+    .hero-stats { display: flex; gap: 36px; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat .num {
+      font-size: 2.4rem; font-weight: 900; display: block;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat .lbl { font-size: 0.68rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+
+    /* counter animation */
+    .count-anim { display: inline-block; }
+
+    /* ══════════════════════════════════════
+       TIMELINE
+    ══════════════════════════════════════ */
+    .timeline { position: relative; padding-left: 28px; }
+
+    /* The vertical line draws itself downward */
+    .timeline::before {
+      content: '';
+      position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent3) 60%, transparent 100%);
+      border-radius: 2px;
+      transform-origin: top;
+      transform: scaleY(0);
+      transition: transform 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .timeline.line-visible::before { transform: scaleY(1); }
+
+    /* Each item starts invisible, slides from left */
+    .timeline-item {
+      position: relative; margin-bottom: 32px;
+      opacity: 0;
+      transform: translateX(-36px);
+      transition: opacity 0.65s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.65s cubic-bezier(0.4,0,0.2,1);
+    }
+    .timeline-item.tl-visible { opacity: 1; transform: translateX(0); }
+
+    /* The dot: starts small and dark, pops in with the item */
+    .timeline-item::before {
+      content: '';
+      position: absolute; left: -33px; top: 5px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent); border: 2px solid #050a18;
+      box-shadow: 0 0 0px var(--accent);
+      transform: scale(0);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s,
+                  box-shadow 0.4s ease 0.2s;
+    }
+    .timeline-item.tl-visible::before {
+      transform: scale(1);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse-dot 2s 0.6s infinite;
+    }
+
+    /* Number badge that appears on each item */
+    .tl-num {
+      position: absolute; left: -44px; top: 2px;
+      width: 10px;
+      font-size: 0.6rem; font-weight: 800;
+      color: var(--accent); opacity: 0;
+      transition: opacity 0.4s 0.5s;
+      text-align: right;
+    }
+    .timeline-item.tl-visible .tl-num { opacity: 0.5; }
+
+    .timeline-item h3 { font-size: 1rem; font-weight: 700; color: #fff; }
+    .timeline-item .tl-meta {
+      font-size: 0.76rem; color: var(--accent); margin: 4px 0 9px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .timeline-item p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; }
+
+    /* Highlight bar that sweeps across the item on reveal */
+    .timeline-item .tl-highlight {
+      position: absolute;
+      inset: -6px -12px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(0,198,255,0.07), transparent);
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.5s 0.15s, transform 0.5s 0.15s;
+      pointer-events: none;
+    }
+    .timeline-item.tl-visible .tl-highlight { opacity: 1; transform: translateX(0); }
+
+    /* ══════════════════════════════════════
+       SKILL PILLS
+    ══════════════════════════════════════ */
+    .skills-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(0,198,255,0.18);
+      border-radius: 999px;
+      padding: 7px 17px;
+      font-size: 0.79rem; color: var(--text); font-weight: 500;
+      cursor: default;
+      transition: all 0.25s;
+    }
+    .pill:hover {
+      background: rgba(0,198,255,0.12); border-color: var(--accent);
+      color: var(--accent); transform: translateY(-2px);
+    }
+    .pill.highlight {
+      background: linear-gradient(90deg, rgba(0,114,255,0.25), rgba(0,198,255,0.25));
+      border-color: rgba(0,198,255,0.4); color: #fff; font-weight: 700;
+    }
+
+    /* ══════════════════════════════════════
+       PROJECT CARDS
+    ══════════════════════════════════════ */
+    .project-card {
+      background: var(--glass);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(0,198,255,0.1);
+      border-radius: var(--radius);
+      padding: 26px 30px;
+      transition: transform 0.35s, border-color 0.35s, box-shadow 0.35s;
+      position: relative; overflow: hidden;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,114,255,0.06), transparent);
+      opacity: 0; transition: opacity 0.35s;
+    }
+    .project-card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 20px 60px rgba(0,198,255,0.1); }
+    .project-card:hover::before { opacity: 1; }
+    .project-card .industry-tag {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 11px;
+    }
+    .project-card h3 { font-size: 0.98rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .project-card p { font-size: 0.81rem; color: var(--muted); line-height: 1.65; }
+    .role-badge {
+      display: inline-block; margin-top: 16px;
+      background: rgba(0,114,255,0.15); border: 1px solid rgba(0,114,255,0.35);
+      border-radius: 999px; padding: 4px 14px;
+      font-size: 0.73rem; color: #7eb8ff; font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════
+       HOBBY CARDS
+    ══════════════════════════════════════ */
+    .hobby-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .hobby-card {
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius);
+      padding: 32px 22px; text-align: center; cursor: pointer;
+      transition: all 0.35s;
+      position: relative; overflow: hidden;
+    }
+    .hobby-card::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+      transform: scaleX(0); transition: transform 0.35s;
+    }
+    .hobby-card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,198,255,0.1); }
+    .hobby-card:hover::before { transform: scaleX(1); }
+    .hobby-icon { font-size: 2.6rem; display: block; margin-bottom: 14px; transition: transform 0.35s; }
+    .hobby-card:hover .hobby-icon { transform: scale(1.15) rotate(-5deg); }
+    .hobby-card h3 { font-size: 0.95rem; font-weight: 700; color: #fff; }
+    .hobby-card p { font-size: 0.77rem; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+
+    /* ══════════════════════════════════════
+       INFO TABLE
+    ══════════════════════════════════════ */
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .info-table td { padding: 13px 0; font-size: 0.87rem; }
+    .info-table td:first-child { color: var(--muted); width: 170px; font-weight: 500; }
+    .info-table td:last-child { color: #fff; font-weight: 500; }
+
+    /* ══════════════════════════════════════
+       CONTACT LINKS
+    ══════════════════════════════════════ */
+    .contact-links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 22px; }
+    .contact-link {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--glass-light); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 999px; padding: 11px 22px;
+      color: var(--text); text-decoration: none;
+      font-size: 0.83rem; font-weight: 500;
+      transition: all 0.3s;
+    }
+    .contact-link:hover { background: rgba(0,198,255,0.1); border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    /* ══════════════════════════════════════
+       FLOATING BACKGROUND LABEL
+    ══════════════════════════════════════ */
+    #bg-label {
+      position: fixed;
+      bottom: 30px; left: calc(var(--nav-w) + 20px);
+      font-size: 0.65rem; letter-spacing: 3px;
+      text-transform: uppercase; color: rgba(255,255,255,0.25);
+      z-index: 50; pointer-events: none;
+      transition: opacity 0.8s;
+    }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      :root { --nav-w: 0px; }
+      nav { display: none; }
+      main { margin-left: 0; }
+      section { padding: 44px 22px 64px; }
+      #section-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dual background layers for smooth crossfade -->
+  <div id="bg-a"></div>
+  <div id="bg-b"></div>
+
+  <!-- Floating particles -->
+  <canvas id="particles"></canvas>
+
+  <!-- Top scroll progress bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Background section label -->
+  <div id="bg-label"></div>
+
+  <!-- Section dot navigation (right side) -->
+  <div id="section-dots">
+    <div class="dot" data-target="hero"       data-label="Home"></div>
+    <div class="dot" data-target="profile"    data-label="Profile"></div>
+    <div class="dot" data-target="experience" data-label="Experience"></div>
+    <div class="dot" data-target="skills"     data-label="Skills"></div>
+    <div class="dot" data-target="projects"   data-label="Projects"></div>
+    <div class="dot" data-target="education"  data-label="Education"></div>
+    <div class="dot" data-target="hobbies"    data-label="Hobbies"></div>
+    <div class="dot" data-target="contact"    data-label="Contact"></div>
+  </div>
+
+  <!-- Auto-scroll controls -->
+  <div id="autoscroll-ctrl">
+    <span id="speed-label">AUTO</span>
+    <button class="ctrl-btn" id="btn-slower" title="Slower">⏪</button>
+    <button class="ctrl-btn" id="btn-playpause" title="Pause">⏸</button>
+    <button class="ctrl-btn" id="btn-faster" title="Faster">⏩</button>
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <nav id="sidenav">
+    <div class="nav-brand">
+      <h2>Anita Dixit</h2>
+      <p>Senior Business Process Consultant<br>SAP · Bangalore, India</p>
+    </div>
+    <a href="#hero"       class="nav-link active" data-section="hero">       <span class="nav-icon">🏠</span> Home</a>
+    <a href="#profile"    class="nav-link" data-section="profile">    <span class="nav-icon">👤</span> Profile</a>
+    <a href="#experience" class="nav-link" data-section="experience"> <span class="nav-icon">💼</span> Experience</a>
+    <a href="#skills"     class="nav-link" data-section="skills">     <span class="nav-icon">⚙️</span> Skills</a>
+    <a href="#projects"   class="nav-link" data-section="projects">   <span class="nav-icon">🛠️</span> Projects</a>
+    <a href="#education"  class="nav-link" data-section="education">  <span class="nav-icon">🎓</span> Education</a>
+    <a href="#hobbies"    class="nav-link" data-section="hobbies">    <span class="nav-icon">🌊</span> Hobbies</a>
+    <a href="#contact"    class="nav-link" data-section="contact">    <span class="nav-icon">📬</span> Contact</a>
+  </nav>
+
+  <main>
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <div class="hero-badge reveal">✦ SAP &nbsp;·&nbsp; AI &nbsp;·&nbsp; Cloud &nbsp;·&nbsp; Oil &amp; Gas</div>
+      <h1 class="section-title reveal" style="transition-delay:0.1s">
+        <span id="typewriter"></span>
+      </h1>
+      <p class="hero-sub reveal" style="transition-delay:0.2s">
+        Senior Technical Leader &amp; Principal Software Engineer with <strong style="color:#fff">25+ years</strong>
+        in SAP product engineering, Enterprise Cloud platforms, and AI/GenAI solutions. Driving innovation across
+        Oil &amp; Gas, BTP, HANA, and beyond.
+      </p>
+      <div class="hero-stats stagger" style="transition-delay:0.3s">
+        <div class="stat">
+          <span class="num"><span class="count-anim" data-target="25">0</span>+</span>
+          <span class="lbl">Years SAP</span>
+        </div>
+        <div class="stat">
+          <span class="num"><span class="count-anim" data-target="100">0</span>+</span>
+          <span class="lbl">Critical Defects Resolved</span>
+        </div>
+        <div class="stat">
+          <span class="num"><span class="count-anim" data-target="2">0</span></span>
+          <span class="lbl">AI Solutions Built</span>
+        </div>
+        <div class="stat">
+          <span class="num"><span class="count-anim" data-target="5">0</span></span>
+          <span class="lbl">Major Domains</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PROFILE ═══════════ -->
+    <section id="profile">
+      <div class="section-label reveal">About Me</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Professional Profile</h2>
+      <div class="card reveal" style="max-width:780px; transition-delay:0.2s">
+        <p style="font-size:0.97rem;line-height:1.85;color:var(--muted)">
+          Senior Technical Leader (Principal Software Engineer) and Senior Cloud Engineering and Quality Leader with over
+          <strong style="color:#fff">25 years of experience</strong> in SAP product engineering and Enterprise Cloud platforms.
+          Recognised for advancing AI adoption through GenAI training and Agentic AI hackathons, with a focus on
+          AI-driven enterprise engineering, automation and SAP cloud transformation.
+        </p>
+        <div style="margin-top:28px;display:flex;gap:24px;flex-wrap:wrap;" class="stagger">
+          <div>
+            <div style="font-size:0.66rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px">Location</div>
+            <div style="font-size:0.9rem;font-weight:600">📍 Bangalore, India</div>
+          </div>
+          <div>
+            <div style="font-size:0.66rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px">Languages</div>
+            <div style="font-size:0.9rem;font-weight:600">🗣️ English &nbsp;·&nbsp; ASL</div>
+          </div>
+          <div>
+            <div style="font-size:0.66rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px">Citizenship</div>
+            <div style="font-size:0.9rem;font-weight:600">🇮🇳 Indian</div>
+          </div>
+          <div>
+            <div style="font-size:0.66rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px">Company</div>
+            <div style="font-size:0.9rem;font-weight:600">🏢 SAP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ EXPERIENCE ═══════════ -->
+    <section id="experience">
+      <div class="section-label reveal">Career Journey</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Professional Experience</h2>
+      <div class="card reveal" style="max-width:800px;transition-delay:0.2s">
+        <div class="timeline" id="exp-timeline">
+          <div class="timeline-item">
+            <div class="tl-highlight"></div>
+            <span class="tl-num">01</span>
+            <h3>AI/GenAI Solution Lead</h3>
+            <div class="tl-meta">Oil &amp; Gas Clients · AI-powered Supply Chain</div>
+            <p>Built an AI-powered Supply Chain Dashboard providing a real-time cross-module view of PP, MM and SD
+            disruptions, with a natural-language What-If AI agent to enable faster impact assessment and proactive
+            business decisions.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-highlight"></div>
+            <span class="tl-num">02</span>
+            <h3>Lead Cloud Portal &amp; BTP Validation</h3>
+            <div class="tl-meta">SAP Cloud Portal &amp; BTP · Neo &amp; Cloud Foundry</div>
+            <p>Led full lifecycle validation of SAP Cloud Portal and BTP missions. Developed full-stack CAP applications
+            with UI5, established reusable frameworks and quality standards, accelerating cloud adoption.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-highlight"></div>
+            <span class="tl-num">03</span>
+            <h3>Principal Developer — Performance &amp; Automation</h3>
+            <div class="tl-meta">SAP BW on HANA · EPM Scenarios</div>
+            <p>Led performance optimization and validation using ABAP CDS views. Designed analytical demo content and
+            implemented automation workflows to streamline validation and reduce manual effort.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-highlight"></div>
+            <span class="tl-num">04</span>
+            <h3>UI Testing Lead — NetWeaver</h3>
+            <div class="tl-meta">SAP Internal / Product Teams · UI Technologies</div>
+            <p>Led end-to-end validation of SAP NetWeaver UI technologies — Web Dynpro ABAP/Java, PLS, NWBC, FPM,
+            C-Tools. Standardized validation processes to reduce manual effort and improve regression detection.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-highlight"></div>
+            <span class="tl-num">05</span>
+            <h3>SAP ABAP Developer / Module Lead</h3>
+            <div class="tl-meta">Oil &amp; Gas Clients · SAP IS-Oil</div>
+            <p>Led development and validation of SAP R/3 IS-Oil modules: TAS, TPI, TSW, and PRA. Owned end-to-end
+            ABAP development, module design, performance optimization, and ALE/IDoc configuration.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ SKILLS ═══════════ -->
+    <section id="skills">
+      <div class="section-label reveal">Expertise</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Technical Skills</h2>
+      <div class="card-grid stagger">
+        <div class="card">
+          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">SAP Platform</h3>
+          <div class="skills-cloud">
+            <span class="pill highlight">SAP S/4HANA</span>
+            <span class="pill highlight">SAP IS-Oil</span>
+            <span class="pill">SAP R/3</span>
+            <span class="pill">NetWeaver</span>
+            <span class="pill">SAP BTP</span>
+            <span class="pill">BW on HANA</span>
+            <span class="pill">CAP</span>
+            <span class="pill">SAP UI5</span>
+            <span class="pill">Cloud Foundry</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Development</h3>
+          <div class="skills-cloud">
+            <span class="pill highlight">ABAP</span>
+            <span class="pill highlight">ABAP CDS</span>
+            <span class="pill">Java</span>
+            <span class="pill">JSP</span>
+            <span class="pill">Web Dynpro</span>
+            <span class="pill">ALE / IDoc</span>
+            <span class="pill">Full-Stack</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">AI &amp; Automation</h3>
+          <div class="skills-cloud">
+            <span class="pill highlight">Generative AI</span>
+            <span class="pill highlight">Agentic AI</span>
+            <span class="pill">AI Solution Design</span>
+            <span class="pill">Test Automation</span>
+            <span class="pill">Automation Frameworks</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Quality &amp; Cloud</h3>
+          <div class="skills-cloud">
+            <span class="pill highlight">Cloud Validation</span>
+            <span class="pill">Quality Governance</span>
+            <span class="pill">E2E Testing</span>
+            <span class="pill">Regression Detection</span>
+            <span class="pill">Release Management</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PROJECTS ═══════════ -->
+    <section id="projects">
+      <div class="section-label reveal">Key Contributions</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">SAP Project Experience</h2>
+      <div class="card-grid stagger">
+        <div class="project-card">
+          <div class="industry-tag">🛢️ Oil, Gas &amp; Energy</div>
+          <h3>AI-Powered Supply Chain Dashboard</h3>
+          <p>Real-time cross-module view of PP, MM and SD disruptions with a natural-language What-If AI agent
+          for faster impact assessment and proactive business decisions.</p>
+          <span class="role-badge">AI/GenAI Solution Lead</span>
+        </div>
+        <div class="project-card">
+          <div class="industry-tag">🛢️ Oil &amp; Gas / SAP IS-Oil</div>
+          <h3>IS-Oil Module Development &amp; Validation</h3>
+          <p>Led E2E ABAP development for TAS, TPI, TSW and PRA modules. Configured ALE/IDoc,
+          optimized performance, and ensured business-critical process stability.</p>
+          <span class="role-badge">SAP ABAP Developer / Module Lead</span>
+        </div>
+        <div class="project-card">
+          <div class="industry-tag">☁️ SAP Cloud Portal &amp; BTP</div>
+          <h3>Cloud Portal &amp; BTP Full Lifecycle Validation</h3>
+          <p>Developed full-stack CAP applications with UI5, established reusable frameworks,
+          and drove quality governance across Neo and Cloud Foundry environments.</p>
+          <span class="role-badge">Lead Cloud Portal &amp; BTP Validation</span>
+        </div>
+        <div class="project-card">
+          <div class="industry-tag">📊 BW on HANA</div>
+          <h3>EPM Performance Optimization &amp; Automation</h3>
+          <p>Led performance optimization using ABAP CDS views, implemented automation workflows,
+          and strengthened regression detection for mission-critical enterprise scenarios.</p>
+          <span class="role-badge">Principal Developer</span>
+        </div>
+        <div class="project-card">
+          <div class="industry-tag">🖥️ NetWeaver UI</div>
+          <h3>NetWeaver UI Technology Validation</h3>
+          <p>Led validation of Web Dynpro ABAP/Java, PLS, NWBC, FPM, C-Tools. Standardized
+          testing processes and reduced manual effort across multiple UI technologies.</p>
+          <span class="role-badge">UI Testing Lead</span>
+        </div>
+        <div class="project-card">
+          <div class="industry-tag">🌟 SAP HANA</div>
+          <h3>SHINE — SAP HANA Interactive Education</h3>
+          <p>Contributed to R&amp;D and PoCs in the SHINE project, accelerating HANA learning
+          and product adoption through interactive educational demos.</p>
+          <span class="role-badge">R&amp;D Contributor</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ EDUCATION ═══════════ -->
+    <section id="education">
+      <div class="section-label reveal">Academic Background</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Education</h2>
+      <div class="card reveal" style="max-width:620px;transition-delay:0.2s">
+        <div style="display:flex;align-items:center;gap:22px;margin-bottom:22px">
+          <div style="font-size:3.2rem;filter:drop-shadow(0 0 16px rgba(0,198,255,0.4))">🎓</div>
+          <div>
+            <h3 style="font-size:1.15rem;font-weight:800;color:#fff">Bachelor of Engineering</h3>
+            <div style="color:var(--accent);font-size:0.88rem;font-weight:700;margin:5px 0">Computer Science</div>
+            <div style="color:var(--muted);font-size:0.82rem">Bangalore University &nbsp;·&nbsp; 1994 – 1998</div>
+          </div>
+        </div>
+        <div style="background:rgba(0,198,255,0.05);border:1px solid rgba(0,198,255,0.15);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px">
+          <div>
+            <div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px">Academic Score</div>
+            <div style="font-size:2rem;font-weight:900;color:var(--accent)">71%</div>
+          </div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden">
+            <div style="width:71%;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:999px;animation:bar-fill 1.5s 0.5s ease both" id="edu-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ HOBBIES ═══════════ -->
+    <section id="hobbies">
+      <div class="section-label reveal">Beyond Work</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Hobbies &amp; Interests</h2>
+      <div class="hobby-grid stagger">
+        <div class="hobby-card" data-bg="swimming">
+          <span class="hobby-icon">🏊</span>
+          <h3>Swimming</h3>
+          <p>Lap swimming for fitness, clarity, and calm</p>
+        </div>
+        <div class="hobby-card" data-bg="technology">
+          <span class="hobby-icon">🤖</span>
+          <h3>AI Exploration</h3>
+          <p>Hackathons, GenAI research, and building AI tools</p>
+        </div>
+        <div class="hobby-card" data-bg="nature">
+          <span class="hobby-icon">🌿</span>
+          <h3>Nature &amp; Travel</h3>
+          <p>Exploring landscapes and recharging outdoors</p>
+        </div>
+        <div class="hobby-card" data-bg="reading">
+          <span class="hobby-icon">📚</span>
+          <h3>Learning &amp; Reading</h3>
+          <p>Technical literature, innovation, and continuous growth</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CONTACT ═══════════ -->
+    <section id="contact">
+      <div class="section-label reveal">Get in Touch</div>
+      <h2 class="section-title reveal" style="transition-delay:0.1s">Contact</h2>
+      <div class="card reveal" style="max-width:620px;transition-delay:0.2s">
+        <table class="info-table">
+          <tr><td>Name</td><td>Anita Dixit</td></tr>
+          <tr><td>Employee ID</td><td>I023725</td></tr>
+          <tr><td>Location</td><td>Bangalore, India</td></tr>
+          <tr><td>Company</td><td>SAP</td></tr>
+          <tr><td>Role</td><td>Senior Business Process Consultant</td></tr>
+          <tr><td>Languages</td><td>English · American Sign Language</td></tr>
+        </table>
+        <div class="contact-links">
+          <a class="contact-link" href="https://github.com" target="_blank">⌨️ GitHub Profile</a>
+          <a class="contact-link" href="https://linkedin.com" target="_blank">🔗 LinkedIn</a>
+          <a class="contact-link" href="mailto:anita.dixit@sap.com">✉️ Email</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <style>
+    @keyframes bar-fill { from { width: 0 } to { width: 71% } }
+  </style>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════
+     BACKGROUNDS
+  ═══════════════════════════════════════════════════════ */
+  const SECTION_META = {
+    hero:       { url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80', label: 'Technology & Space' },
+    profile:    { url: 'https://images.unsplash.com/photo-1573164574511-73c773193279?w=1920&q=80', label: 'Modern Workspace' },
+    experience: { url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80', label: 'Oil & Gas Industry' },
+    skills:     { url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&q=80', label: 'Circuit & Technology' },
+    projects:   { url: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1920&q=80', label: 'Industrial Engineering' },
+    education:  { url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1920&q=80', label: 'University Campus' },
+    hobbies:    { url: 'https://images.unsplash.com/photo-1560090995-01632a28895b?w=1920&q=80', label: 'Swimming Pool' },
+    contact:    { url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80', label: 'Modern Office' },
+  };
+
+  const HOBBY_BG = {
+    swimming:   { url: 'https://images.unsplash.com/photo-1560090995-01632a28895b?w=1920&q=80', label: 'Swimming' },
+    technology: { url: 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1920&q=80', label: 'Artificial Intelligence' },
+    nature:     { url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80', label: 'Nature & Travel' },
+    reading:    { url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920&q=80', label: 'Knowledge & Books' },
+  };
+
+  const bgA = document.getElementById('bg-a');
+  const bgB = document.getElementById('bg-b');
+  const bgLabel = document.getElementById('bg-label');
+  let activeLayer = 'a'; // which layer is currently visible
+  let currentUrl = '';
+
+  function setBackground(url, label) {
+    if (url === currentUrl) return;
+    currentUrl = url;
+
+    const next = activeLayer === 'a' ? bgB : bgA;
+    const curr = activeLayer === 'a' ? bgA : bgB;
+
+    next.style.backgroundImage = `url('${url}')`;
+    next.style.opacity = '1';
+    curr.style.opacity = '0';
+    activeLayer = activeLayer === 'a' ? 'b' : 'a';
+
+    bgLabel.textContent = label || '';
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     PARTICLES
+  ═══════════════════════════════════════════════════════ */
+  (function initParticles() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 70; i++) {
+      particles.push({
+        x: Math.random() * 2000,
+        y: Math.random() * 1200,
+        r: Math.random() * 1.5 + 0.3,
+        dx: (Math.random() - 0.5) * 0.3,
+        dy: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x % W, p.y % H, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,198,255,${p.alpha})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ═══════════════════════════════════════════════════════
+     TYPEWRITER
+  ═══════════════════════════════════════════════════════ */
+  (function typewriter() {
+    const el = document.getElementById('typewriter');
+    const text = 'Anita Dixit';
+    let i = 0;
+    function tick() {
+      if (i <= text.length) {
+        el.textContent = text.slice(0, i++);
+        setTimeout(tick, i < text.length ? 90 : 300);
+      }
+    }
+    setTimeout(tick, 600);
+  })();
+
+  /* ═══════════════════════════════════════════════════════
+     COUNTER ANIMATION
+  ═══════════════════════════════════════════════════════ */
+  function animateCounters() {
+    document.querySelectorAll('.count-anim').forEach(el => {
+      const target = parseInt(el.dataset.target);
+      let current = 0;
+      const step = Math.ceil(target / 40);
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current;
+        if (current >= target) clearInterval(timer);
+      }, 35);
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SCROLL PROGRESS BAR
+  ═══════════════════════════════════════════════════════ */
+  const progressBar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const total = document.body.scrollHeight - window.innerHeight;
+    const pct = total > 0 ? (window.scrollY / total) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     INTERSECTION OBSERVER — section reveal + bg switch
+  ═══════════════════════════════════════════════════════ */
+  const sections = Array.from(document.querySelectorAll('section[id]'));
+  const navLinks = document.querySelectorAll('.nav-link');
+  const dots = document.querySelectorAll('.dot');
+  let currentSection = 'hero';
+  let countersRun = false;
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+      currentSection = id;
+
+      // Background
+      const meta = SECTION_META[id];
+      if (meta) setBackground(meta.url, meta.label);
+
+      // Nav active state
+      navLinks.forEach(l => l.classList.toggle('active', l.dataset.section === id));
+      dots.forEach(d => d.classList.toggle('active', d.dataset.target === id));
+
+      // Counters on hero
+      if (id === 'hero' && !countersRun) { countersRun = true; animateCounters(); }
+    });
+  }, { threshold: 0.38 });
+
+  sections.forEach(s => sectionObserver.observe(s));
+
+  /* ── Reveal observer ── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  // Small delay so the browser has painted before we start observing
+  // — prevents the "already in viewport but observer misses it" bug
+  setTimeout(() => {
+    document.querySelectorAll('.reveal, .reveal-left, .stagger').forEach(el => {
+      // If already in view (e.g. hero section on load), mark visible immediately
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+      } else {
+        revealObserver.observe(el);
+      }
+    });
+  }, 80);
+
+  /* ═══════════════════════════════════════════════════════
+     HOBBY HOVER BACKGROUNDS
+  ═══════════════════════════════════════════════════════ */
+  document.querySelectorAll('.hobby-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      const key = card.dataset.bg;
+      const meta = HOBBY_BG[key];
+      if (meta) setBackground(meta.url, meta.label);
+    });
+    card.addEventListener('mouseleave', () => {
+      const meta = SECTION_META['hobbies'];
+      setBackground(meta.url, meta.label);
+    });
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION DOTS — click to navigate
+  ═══════════════════════════════════════════════════════ */
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     TIMELINE — staggered per-item animation
+  ═══════════════════════════════════════════════════════ */
+  (function initTimeline() {
+    const timeline = document.getElementById('exp-timeline');
+    const items = Array.from(timeline.querySelectorAll('.timeline-item'));
+    let triggered = false;
+
+    const tlObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting || triggered) return;
+        triggered = true;
+
+        // Draw the vertical line first
+        timeline.classList.add('line-visible');
+
+        // Then reveal each item with a staggered delay
+        items.forEach((item, i) => {
+          setTimeout(() => {
+            item.classList.add('tl-visible');
+          }, 200 + i * 220);
+        });
+      });
+    }, { threshold: 0.15 });
+
+    tlObserver.observe(timeline);
+
+    // Re-trigger if user scrolls back up past it
+    const resetObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+          triggered = false;
+          timeline.classList.remove('line-visible');
+          items.forEach(item => item.classList.remove('tl-visible'));
+        }
+      });
+    }, { threshold: 0 });
+
+    resetObserver.observe(document.getElementById('experience'));
+  })();
+  ═══════════════════════════════════════════════════════ */
+  const SPEEDS = [4000, 6000, 8000, 12000]; // ms per section
+  let speedIdx = 1; // default 6s
+  let autoPlaying = true;
+  let autoTimer = null;
+  let userScrolling = false;
+  let userScrollTimer = null;
+
+  const btnPlay = document.getElementById('btn-playpause');
+  const btnSlower = document.getElementById('btn-slower');
+  const btnFaster = document.getElementById('btn-faster');
+  const speedLabel = document.getElementById('speed-label');
+
+  function updateSpeedLabel() {
+    const labels = ['FAST', 'NORMAL', 'SLOW', 'VERY SLOW'];
+    speedLabel.textContent = labels[speedIdx];
+  }
+
+  function scrollToNextSection() {
+    if (userScrolling) return;
+    const idx = sections.findIndex(s => s.id === currentSection);
+    const next = sections[idx + 1] || sections[0];
+    next.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function startAutoScroll() {
+    clearInterval(autoTimer);
+    if (!autoPlaying) return;
+    autoTimer = setInterval(scrollToNextSection, SPEEDS[speedIdx]);
+  }
+
+  btnPlay.addEventListener('click', () => {
+    autoPlaying = !autoPlaying;
+    btnPlay.textContent = autoPlaying ? '⏸' : '▶️';
+    startAutoScroll();
+  });
+
+  btnSlower.addEventListener('click', () => {
+    speedIdx = Math.min(speedIdx + 1, SPEEDS.length - 1);
+    updateSpeedLabel(); startAutoScroll();
+  });
+
+  btnFaster.addEventListener('click', () => {
+    speedIdx = Math.max(speedIdx - 1, 0);
+    updateSpeedLabel(); startAutoScroll();
+  });
+
+  // Pause auto-scroll when user manually scrolls
+  window.addEventListener('wheel', () => {
+    userScrolling = true;
+    clearTimeout(userScrollTimer);
+    userScrollTimer = setTimeout(() => { userScrolling = false; }, 3000);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', () => {
+    userScrolling = true;
+    clearTimeout(userScrollTimer);
+    userScrollTimer = setTimeout(() => { userScrolling = false; }, 3000);
+  }, { passive: true });
+
+  // Init
+  setBackground(SECTION_META['hero'].url, SECTION_META['hero'].label);
+  updateSpeedLabel();
+  startAutoScroll();
+  </script>
+
+</body>
+</html>
