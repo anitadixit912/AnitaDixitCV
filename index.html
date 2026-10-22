@@ -1144,6 +1144,8 @@
   /* ═══════════════════════════════════════════════════════
      EXPERIENCE SHOWCASE — one card at a time
   ═══════════════════════════════════════════════════════ */
+  let expShowcaseDone = false; // flag read by auto-scroll engine
+
   (function initExpShowcase() {
     const cards = Array.from(document.querySelectorAll('.exp-card'));
     const segs  = Array.from(document.querySelectorAll('.exp-progress-seg'));
@@ -1154,7 +1156,6 @@
     const AUTO_MS = 20000;
 
     let current = 0;
-    let fillTimer = null;
     let autoTimer = null;
     let running = false;
 
@@ -1181,7 +1182,6 @@
       });
 
       // Animate current segment fill
-      clearTimeout(fillTimer);
       const activeSeg = segs[current];
       activeSeg.classList.add('active');
       const fill = activeSeg.querySelector('.seg-fill');
@@ -1197,16 +1197,21 @@
       // Update counter and buttons
       curLabel.textContent = current + 1;
       btnPrev.disabled = current === 0;
-      btnNext.disabled = current === TOTAL - 1;
+      btnNext.textContent = current === TOTAL - 1 ? '✓' : '→';
     }
 
     function startAuto() {
       clearInterval(autoTimer);
+      expShowcaseDone = false;
       autoTimer = setInterval(() => {
         if (current < TOTAL - 1) {
-          goTo(current + 1, 1);
+          showCard(current + 1, 1);
         } else {
-          goTo(0, 1);
+          // All cards shown — signal auto-scroll it can move on
+          clearInterval(autoTimer);
+          expShowcaseDone = true;
+          // Mark all segs done
+          segs.forEach(s => { s.classList.remove('active'); s.classList.add('done'); s.querySelector('.seg-fill').style.width = '100%'; });
         }
       }, AUTO_MS);
     }
@@ -1216,10 +1221,11 @@
       startAuto();
     }
 
-    btnNext.addEventListener('click', () => goTo(current + 1, 1));
+    btnNext.addEventListener('click', () => {
+      if (current < TOTAL - 1) goTo(current + 1, 1);
+    });
     btnPrev.addEventListener('click', () => goTo(current - 1, -1));
 
-    // Click on progress segment to jump
     segs.forEach(seg => {
       seg.addEventListener('click', () => goTo(parseInt(seg.dataset.idx), 1));
     });
@@ -1229,6 +1235,7 @@
       entries.forEach(entry => {
         if (entry.isIntersecting && !running) {
           running = true;
+          expShowcaseDone = false;
           showCard(0, 1);
           startAuto();
         }
@@ -1264,6 +1271,8 @@
 
   function scrollToNextSection() {
     if (userScrolling) return;
+    // Block leaving experience section until all 5 cards have played
+    if (currentSection === 'experience' && !expShowcaseDone) return;
     const idx = sections.findIndex(s => s.id === currentSection);
     const next = sections[idx + 1] || sections[0];
     next.scrollIntoView({ behavior: 'smooth' });
