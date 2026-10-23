@@ -459,37 +459,92 @@
     }
 
     /* ══════════════════════════════════════
-       PROJECT CARDS
+       PROJECT SHOWCASE (one at a time)
     ══════════════════════════════════════ */
-    .project-card {
-      background: var(--glass);
-      backdrop-filter: blur(22px);
-      border: 1px solid rgba(0,198,255,0.1);
-      border-radius: var(--radius);
-      padding: 26px 30px;
-      transition: transform 0.35s, border-color 0.35s, box-shadow 0.35s;
-      position: relative; overflow: hidden;
+    .proj-showcase {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
     }
-    .project-card::before {
-      content: '';
+    .proj-progress-bar {
+      display: flex; gap: 6px; margin-bottom: 24px;
+    }
+    .proj-progress-seg {
+      flex: 1; height: 3px; border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden; cursor: pointer;
+    }
+    .proj-progress-seg .seg-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 999px; transition: width 0.1s linear;
+    }
+    .proj-progress-seg.active .seg-fill { width: 100%; }
+    .proj-progress-seg.done   .seg-fill { width: 100%; background: var(--accent); }
+
+    .proj-stage {
+      position: relative;
+      min-height: 260px;
+    }
+
+    .proj-card {
       position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(0,114,255,0.06), transparent);
-      opacity: 0; transition: opacity 0.35s;
+      background: rgba(8,12,28,0.68);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(0,198,255,0.15);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      opacity: 0; pointer-events: none;
+      transform: translateX(60px) scale(0.97);
+      transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.55s cubic-bezier(0.4,0,0.2,1);
     }
-    .project-card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 20px 60px rgba(0,198,255,0.1); }
-    .project-card:hover::before { opacity: 1; }
-    .project-card .industry-tag {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 2.5px;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 11px;
+    .proj-card.active {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(0) scale(1);
     }
-    .project-card h3 { font-size: 0.98rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
-    .project-card p { font-size: 0.81rem; color: var(--muted); line-height: 1.65; }
+    .proj-card.exit-left {
+      opacity: 0; transform: translateX(-60px) scale(0.97);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .proj-card .industry-tag {
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--accent); opacity: 0.8; margin-bottom: 8px;
+    }
+    .proj-card h3 { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.25; }
+    .proj-card p  { font-size: 0.88rem; color: var(--muted); line-height: 1.75; }
+    .proj-card-glow {
+      position: absolute; inset: 0; border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(0,114,255,0.06), transparent 60%);
+      pointer-events: none;
+    }
     .role-badge {
       display: inline-block; margin-top: 16px;
       background: rgba(0,114,255,0.15); border: 1px solid rgba(0,114,255,0.35);
       border-radius: 999px; padding: 4px 14px;
       font-size: 0.73rem; color: #7eb8ff; font-weight: 600;
     }
+    .proj-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 20px;
+    }
+    .proj-nav-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(0,198,255,0.25);
+      background: rgba(8,12,28,0.6);
+      color: var(--accent); font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+    .proj-nav-btn:hover:not(:disabled) {
+      background: rgba(0,198,255,0.15); border-color: var(--accent);
+      transform: scale(1.1);
+    }
+    .proj-nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .proj-counter {
+      font-size: 0.78rem; color: var(--muted); letter-spacing: 2px;
+    }
+    .proj-counter span { color: var(--accent); font-weight: 700; }
 
     /* ══════════════════════════════════════
        HOBBY CARDS
@@ -501,8 +556,17 @@
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: var(--radius);
       padding: 32px 22px; text-align: center; cursor: pointer;
-      transition: all 0.35s;
+      transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
       position: relative; overflow: hidden;
+      opacity: 0.35;
+      transform: scale(0.97);
+    }
+    .hobby-card.spotlight {
+      opacity: 1;
+      transform: scale(1.04);
+      border-color: var(--accent);
+      box-shadow: 0 0 40px rgba(0,198,255,0.25), 0 20px 50px rgba(0,0,0,0.4);
+      background: rgba(0,40,80,0.72);
     }
     .hobby-card::before {
       content: '';
@@ -755,52 +819,79 @@
     <section id="skills">
       <div class="section-label reveal">Expertise</div>
       <h2 class="section-title reveal" style="transition-delay:0.1s">Technical Skills</h2>
-      <div class="card-grid stagger">
-        <div class="card">
-          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">SAP Platform</h3>
-          <div class="skills-cloud">
-            <span class="pill highlight">SAP S/4HANA</span>
-            <span class="pill highlight">SAP IS-Oil</span>
-            <span class="pill">SAP R/3</span>
-            <span class="pill">NetWeaver</span>
-            <span class="pill">SAP BTP</span>
-            <span class="pill">BW on HANA</span>
-            <span class="pill">CAP</span>
-            <span class="pill">SAP UI5</span>
-            <span class="pill">Cloud Foundry</span>
+
+      <div class="proj-showcase reveal" style="transition-delay:0.2s" id="skills-showcase">
+        <!-- Progress bar -->
+        <div class="proj-progress-bar" id="skills-prog-bar">
+          <div class="proj-progress-seg" data-idx="0"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="1"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="2"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="3"><div class="seg-fill"></div></div>
+        </div>
+
+        <!-- Card stage -->
+        <div class="proj-stage" id="skills-stage">
+          <!-- Card 1: SAP Platform -->
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">🏗️ SAP Platform</h3>
+            <div class="skills-cloud">
+              <span class="pill highlight">SAP S/4HANA</span>
+              <span class="pill highlight">SAP IS-Oil</span>
+              <span class="pill">SAP R/3</span>
+              <span class="pill">NetWeaver</span>
+              <span class="pill">SAP BTP</span>
+              <span class="pill">BW on HANA</span>
+              <span class="pill">CAP</span>
+              <span class="pill">SAP UI5</span>
+              <span class="pill">Cloud Foundry</span>
+            </div>
+          </div>
+          <!-- Card 2: Development -->
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">💻 Development</h3>
+            <div class="skills-cloud">
+              <span class="pill highlight">ABAP</span>
+              <span class="pill highlight">ABAP CDS</span>
+              <span class="pill">Java</span>
+              <span class="pill">JSP</span>
+              <span class="pill">Web Dynpro</span>
+              <span class="pill">ALE / IDoc</span>
+              <span class="pill">Full-Stack</span>
+            </div>
+          </div>
+          <!-- Card 3: AI & Automation -->
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">🤖 AI &amp; Automation</h3>
+            <div class="skills-cloud">
+              <span class="pill highlight">Generative AI</span>
+              <span class="pill highlight">Agentic AI</span>
+              <span class="pill">AI Solution Design</span>
+              <span class="pill">Test Automation</span>
+              <span class="pill">Automation Frameworks</span>
+            </div>
+          </div>
+          <!-- Card 4: Quality & Cloud -->
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">☁️ Quality &amp; Cloud</h3>
+            <div class="skills-cloud">
+              <span class="pill highlight">Cloud Validation</span>
+              <span class="pill">Quality Governance</span>
+              <span class="pill">E2E Testing</span>
+              <span class="pill">Regression Detection</span>
+              <span class="pill">Release Management</span>
+            </div>
           </div>
         </div>
-        <div class="card">
-          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Development</h3>
-          <div class="skills-cloud">
-            <span class="pill highlight">ABAP</span>
-            <span class="pill highlight">ABAP CDS</span>
-            <span class="pill">Java</span>
-            <span class="pill">JSP</span>
-            <span class="pill">Web Dynpro</span>
-            <span class="pill">ALE / IDoc</span>
-            <span class="pill">Full-Stack</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">AI &amp; Automation</h3>
-          <div class="skills-cloud">
-            <span class="pill highlight">Generative AI</span>
-            <span class="pill highlight">Agentic AI</span>
-            <span class="pill">AI Solution Design</span>
-            <span class="pill">Test Automation</span>
-            <span class="pill">Automation Frameworks</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Quality &amp; Cloud</h3>
-          <div class="skills-cloud">
-            <span class="pill highlight">Cloud Validation</span>
-            <span class="pill">Quality Governance</span>
-            <span class="pill">E2E Testing</span>
-            <span class="pill">Regression Detection</span>
-            <span class="pill">Release Management</span>
-          </div>
+
+        <!-- Nav -->
+        <div class="proj-nav">
+          <button class="proj-nav-btn" id="skills-prev" disabled>←</button>
+          <div class="proj-counter">Category <span id="skills-cur">1</span> / 4</div>
+          <button class="proj-nav-btn" id="skills-next">→</button>
         </div>
       </div>
     </section>
@@ -809,48 +900,75 @@
     <section id="projects">
       <div class="section-label reveal">Key Contributions</div>
       <h2 class="section-title reveal" style="transition-delay:0.1s">SAP Project Experience</h2>
-      <div class="card-grid stagger">
-        <div class="project-card">
-          <div class="industry-tag">🛢️ Oil, Gas &amp; Energy</div>
-          <h3>AI-Powered Supply Chain Dashboard</h3>
-          <p>Real-time cross-module view of PP, MM and SD disruptions with a natural-language What-If AI agent
-          for faster impact assessment and proactive business decisions.</p>
-          <span class="role-badge">AI/GenAI Solution Lead</span>
+
+      <div class="proj-showcase reveal" style="transition-delay:0.2s">
+        <!-- Progress bar -->
+        <div class="proj-progress-bar">
+          <div class="proj-progress-seg" data-idx="0"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="1"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="2"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="3"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="4"><div class="seg-fill"></div></div>
+          <div class="proj-progress-seg" data-idx="5"><div class="seg-fill"></div></div>
         </div>
-        <div class="project-card">
-          <div class="industry-tag">🛢️ Oil &amp; Gas / SAP IS-Oil</div>
-          <h3>IS-Oil Module Development &amp; Validation</h3>
-          <p>Led E2E ABAP development for TAS, TPI, TSW and PRA modules. Configured ALE/IDoc,
-          optimized performance, and ensured business-critical process stability.</p>
-          <span class="role-badge">SAP ABAP Developer / Module Lead</span>
+
+        <!-- Card stage -->
+        <div class="proj-stage">
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">🛢️ Oil, Gas &amp; Energy</div>
+            <h3>AI-Powered Supply Chain Dashboard</h3>
+            <p>Real-time cross-module view of PP, MM and SD disruptions with a natural-language What-If AI agent
+            for faster impact assessment and proactive business decisions.</p>
+            <span class="role-badge">AI/GenAI Solution Lead</span>
+          </div>
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">🛢️ Oil &amp; Gas / SAP IS-Oil</div>
+            <h3>IS-Oil Module Development &amp; Validation</h3>
+            <p>Led E2E ABAP development for TAS, TPI, TSW and PRA modules. Configured ALE/IDoc,
+            optimized performance, and ensured business-critical process stability.</p>
+            <span class="role-badge">SAP ABAP Developer / Module Lead</span>
+          </div>
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">☁️ SAP Cloud Portal &amp; BTP</div>
+            <h3>Cloud Portal &amp; BTP Full Lifecycle Validation</h3>
+            <p>Developed full-stack CAP applications with UI5, established reusable frameworks,
+            and drove quality governance across Neo and Cloud Foundry environments.</p>
+            <span class="role-badge">Lead Cloud Portal &amp; BTP Validation</span>
+          </div>
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">📊 BW on HANA</div>
+            <h3>EPM Performance Optimization &amp; Automation</h3>
+            <p>Led performance optimization using ABAP CDS views, implemented automation workflows,
+            and strengthened regression detection for mission-critical enterprise scenarios.</p>
+            <span class="role-badge">Principal Developer</span>
+          </div>
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">🖥️ NetWeaver UI</div>
+            <h3>NetWeaver UI Technology Validation</h3>
+            <p>Led validation of Web Dynpro ABAP/Java, PLS, NWBC, FPM, C-Tools. Standardized
+            testing processes and reduced manual effort across multiple UI technologies.</p>
+            <span class="role-badge">UI Testing Lead</span>
+          </div>
+          <div class="proj-card">
+            <div class="proj-card-glow"></div>
+            <div class="industry-tag">🌟 SAP HANA</div>
+            <h3>SHINE — SAP HANA Interactive Education</h3>
+            <p>Contributed to R&amp;D and PoCs in the SHINE project, accelerating HANA learning
+            and product adoption through interactive educational demos.</p>
+            <span class="role-badge">R&amp;D Contributor</span>
+          </div>
         </div>
-        <div class="project-card">
-          <div class="industry-tag">☁️ SAP Cloud Portal &amp; BTP</div>
-          <h3>Cloud Portal &amp; BTP Full Lifecycle Validation</h3>
-          <p>Developed full-stack CAP applications with UI5, established reusable frameworks,
-          and drove quality governance across Neo and Cloud Foundry environments.</p>
-          <span class="role-badge">Lead Cloud Portal &amp; BTP Validation</span>
-        </div>
-        <div class="project-card">
-          <div class="industry-tag">📊 BW on HANA</div>
-          <h3>EPM Performance Optimization &amp; Automation</h3>
-          <p>Led performance optimization using ABAP CDS views, implemented automation workflows,
-          and strengthened regression detection for mission-critical enterprise scenarios.</p>
-          <span class="role-badge">Principal Developer</span>
-        </div>
-        <div class="project-card">
-          <div class="industry-tag">🖥️ NetWeaver UI</div>
-          <h3>NetWeaver UI Technology Validation</h3>
-          <p>Led validation of Web Dynpro ABAP/Java, PLS, NWBC, FPM, C-Tools. Standardized
-          testing processes and reduced manual effort across multiple UI technologies.</p>
-          <span class="role-badge">UI Testing Lead</span>
-        </div>
-        <div class="project-card">
-          <div class="industry-tag">🌟 SAP HANA</div>
-          <h3>SHINE — SAP HANA Interactive Education</h3>
-          <p>Contributed to R&amp;D and PoCs in the SHINE project, accelerating HANA learning
-          and product adoption through interactive educational demos.</p>
-          <span class="role-badge">R&amp;D Contributor</span>
+
+        <!-- Nav -->
+        <div class="proj-nav">
+          <button class="proj-nav-btn" id="proj-prev" disabled>←</button>
+          <div class="proj-counter">Project <span id="proj-cur">1</span> / 6</div>
+          <button class="proj-nav-btn" id="proj-next">→</button>
         </div>
       </div>
     </section>
@@ -884,26 +1002,30 @@
     <section id="hobbies">
       <div class="section-label reveal">Beyond Work</div>
       <h2 class="section-title reveal" style="transition-delay:0.1s">Hobbies &amp; Interests</h2>
-      <div class="hobby-grid stagger">
-        <div class="hobby-card" data-bg="swimming">
-          <span class="hobby-icon">🏊</span>
-          <h3>Swimming</h3>
-          <p>Lap swimming for fitness, clarity, and calm</p>
-        </div>
-        <div class="hobby-card" data-bg="technology">
-          <span class="hobby-icon">🤖</span>
-          <h3>AI Exploration</h3>
-          <p>Hackathons, GenAI research, and building AI tools</p>
-        </div>
-        <div class="hobby-card" data-bg="nature">
-          <span class="hobby-icon">🌿</span>
-          <h3>Nature &amp; Travel</h3>
-          <p>Exploring landscapes and recharging outdoors</p>
-        </div>
-        <div class="hobby-card" data-bg="reading">
-          <span class="hobby-icon">📚</span>
-          <h3>Learning &amp; Reading</h3>
-          <p>Technical literature, innovation, and continuous growth</p>
+
+      <div class="hobby-spotlight reveal" style="transition-delay:0.2s">
+        <!-- All 4 tiles always visible; active one is highlighted -->
+        <div class="hobby-grid">
+          <div class="hobby-card" data-bg="swimming" data-idx="0">
+            <span class="hobby-icon">🏊</span>
+            <h3>Swimming</h3>
+            <p>Lap swimming for fitness, clarity, and calm</p>
+          </div>
+          <div class="hobby-card" data-bg="technology" data-idx="1">
+            <span class="hobby-icon">🤖</span>
+            <h3>AI Exploration</h3>
+            <p>Hackathons, GenAI research, and building AI tools</p>
+          </div>
+          <div class="hobby-card" data-bg="nature" data-idx="2">
+            <span class="hobby-icon">🌿</span>
+            <h3>Nature &amp; Travel</h3>
+            <p>Exploring landscapes and recharging outdoors</p>
+          </div>
+          <div class="hobby-card" data-bg="reading" data-idx="3">
+            <span class="hobby-icon">📚</span>
+            <h3>Learning &amp; Reading</h3>
+            <p>Technical literature, innovation, and continuous growth</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1117,19 +1239,55 @@
   }, 80);
 
   /* ═══════════════════════════════════════════════════════
-     HOBBY HOVER BACKGROUNDS
+     HOBBY SPOTLIGHT — highlight one tile at a time + bg swap
   ═══════════════════════════════════════════════════════ */
-  document.querySelectorAll('.hobby-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      const key = card.dataset.bg;
+  (function initHobbySpotlight() {
+    const cards = Array.from(document.querySelectorAll('.hobby-card[data-idx]'));
+    const TOTAL  = cards.length;
+    const HOLD_MS = 5000;
+    let current = 0;
+    let timer   = null;
+    let running = false;
+
+    function spotlight(idx) {
+      current = (idx + TOTAL) % TOTAL;
+      cards.forEach((c, i) => c.classList.toggle('spotlight', i === current));
+      const key  = cards[current].dataset.bg;
       const meta = HOBBY_BG[key];
       if (meta) setBackground(meta.url, meta.label);
-    });
-    card.addEventListener('mouseleave', () => {
-      const meta = SECTION_META['hobbies'];
-      setBackground(meta.url, meta.label);
-    });
-  });
+    }
+
+    function startCycle() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        spotlight((current + 1) % TOTAL);
+      }, HOLD_MS);
+    }
+
+    // Click a tile to manually focus it
+    cards.forEach(c => c.addEventListener('click', () => {
+      spotlight(parseInt(c.dataset.idx));
+      startCycle();
+    }));
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !running) {
+          running = true;
+          spotlight(0);
+          startCycle();
+        }
+        if (!e.isIntersecting) {
+          running = false;
+          clearInterval(timer);
+          cards.forEach(c => c.classList.remove('spotlight'));
+          const meta = SECTION_META['hobbies'];
+          setBackground(meta.url, meta.label);
+        }
+      });
+    }, { threshold: 0.3 });
+    obs.observe(document.getElementById('hobbies'));
+  })();
 
   /* ═══════════════════════════════════════════════════════
      SECTION DOTS — click to navigate
@@ -1250,6 +1408,110 @@
   })();
 
   /* ═══════════════════════════════════════════════════════
+     GENERIC SHOWCASE ENGINE — reused for Skills + Projects
+  ═══════════════════════════════════════════════════════ */
+  function initShowcase({ sectionId, cardSel, segSel, prevId, nextId, curId, onDone, AUTO_MS }) {
+    const cards   = Array.from(document.querySelectorAll(cardSel));
+    const segs    = Array.from(document.querySelectorAll(segSel));
+    const btnPrev = document.getElementById(prevId);
+    const btnNext = document.getElementById(nextId);
+    const curLbl  = document.getElementById(curId);
+    const TOTAL   = cards.length;
+
+    let current = 0;
+    let timer   = null;
+    let running = false;
+
+    function showCard(idx, dir) {
+      const prev = current;
+      current = (idx + TOTAL) % TOTAL;
+
+      if (cards[prev] && prev !== current) {
+        cards[prev].classList.remove('active');
+        cards[prev].classList.add(dir >= 0 ? 'exit-left' : 'exit-right');
+        setTimeout(() => cards[prev].classList.remove('exit-left','exit-right'), 500);
+      }
+      cards[current].classList.add('active');
+
+      segs.forEach((s, i) => {
+        s.classList.remove('active','done');
+        s.querySelector('.seg-fill').style.transition = 'none';
+        s.querySelector('.seg-fill').style.width = i < current ? '100%' : '0%';
+        if (i < current) s.classList.add('done');
+      });
+
+      const activeSeg = segs[current];
+      activeSeg.classList.add('active');
+      const fill = activeSeg.querySelector('.seg-fill');
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        fill.style.transition = `width ${AUTO_MS}ms linear`;
+        fill.style.width = '100%';
+      }));
+
+      curLbl.textContent = current + 1;
+      btnPrev.disabled = current === 0;
+      btnNext.textContent = current === TOTAL - 1 ? '✓' : '→';
+    }
+
+    function startAuto() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        if (current < TOTAL - 1) {
+          showCard(current + 1, 1);
+        } else {
+          clearInterval(timer);
+          segs.forEach(s => {
+            s.classList.remove('active'); s.classList.add('done');
+            s.querySelector('.seg-fill').style.width = '100%';
+          });
+          if (onDone) onDone();
+        }
+      }, AUTO_MS);
+    }
+
+    function goTo(idx, dir) { showCard(idx, dir); startAuto(); }
+
+    btnNext.addEventListener('click', () => { if (current < TOTAL - 1) goTo(current + 1, 1); });
+    btnPrev.addEventListener('click', () => goTo(current - 1, -1));
+    segs.forEach(seg => seg.addEventListener('click', () => goTo(parseInt(seg.dataset.idx), 1)));
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !running) {
+          running = true;
+          if (onDone) onDone.reset && onDone.reset();
+          showCard(0, 1); startAuto();
+        }
+        if (!e.isIntersecting) { running = false; clearInterval(timer); }
+      });
+    }, { threshold: 0.3 });
+    obs.observe(document.getElementById(sectionId));
+  }
+
+  let skillsShowcaseDone  = false;
+  let projShowcaseDone    = false;
+
+  initShowcase({
+    sectionId: 'skills',
+    cardSel:   '#skills-stage .proj-card',
+    segSel:    '#skills-prog-bar .proj-progress-seg',
+    prevId: 'skills-prev', nextId: 'skills-next', curId: 'skills-cur',
+    AUTO_MS: 12000,
+    onDone: () => { skillsShowcaseDone = true; }
+  });
+
+  initShowcase({
+    sectionId: 'projects',
+    cardSel:   '#projects .proj-stage .proj-card',
+    segSel:    '#projects .proj-progress-bar .proj-progress-seg',
+    prevId: 'proj-prev', nextId: 'proj-next', curId: 'proj-cur',
+    AUTO_MS: 15000,
+    onDone: () => { projShowcaseDone = true; }
+  });
+
+  /* ═══════════════════════════════════════════════════════
      AUTO-SCROLL ENGINE
   ═══════════════════════════════════════════════════════ */
   const SPEEDS = [4000, 6000, 8000, 12000]; // ms per section
@@ -1273,6 +1535,8 @@
     if (userScrolling) return;
     // Block leaving experience section until all 5 cards have played
     if (currentSection === 'experience' && !expShowcaseDone) return;
+    if (currentSection === 'skills'     && !skillsShowcaseDone)  return;
+    if (currentSection === 'projects'   && !projShowcaseDone)    return;
     const idx = sections.findIndex(s => s.id === currentSection);
     const next = sections[idx + 1] || sections[0];
     next.scrollIntoView({ behavior: 'smooth' });
