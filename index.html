@@ -1322,6 +1322,7 @@
           running = false;
           clearInterval(timer);
           cards.forEach(c => c.classList.remove('spotlight'));
+          currentUrl = ''; // force next setBackground call to always fire
         }
       });
     }, { threshold: 0.3 });
