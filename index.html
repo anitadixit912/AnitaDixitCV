@@ -1256,13 +1256,14 @@
     const TOTAL  = cards.length;
     const HOLD_MS = 8000;
     let current  = 0;
-    let shown    = 0;   // count of distinct tiles shown this cycle
+    let shown    = 0;
     let timer    = null;
     let running  = false;
 
     function spotlight(idx) {
       current = (idx + TOTAL) % TOTAL;
       cards.forEach((c, i) => c.classList.toggle('spotlight', i === current));
+      // Always swap background immediately when spotlight changes
       const key  = cards[current].dataset.bg;
       const meta = HOBBY_BG[key];
       if (meta) setBackground(meta.url, meta.label);
@@ -1271,38 +1272,56 @@
     function startCycle() {
       clearInterval(timer);
       hobbiesShowcaseDone = false;
-      shown = 1; // card 0 already spotlit
+      shown = 1;
       timer = setInterval(() => {
         if (shown < TOTAL) {
           shown++;
           spotlight(current + 1);
         } else {
-          // All tiles have been highlighted — unblock auto-scroll
           clearInterval(timer);
           hobbiesShowcaseDone = true;
         }
       }, HOLD_MS);
     }
 
-    // Click a tile to manually focus it (does not reset done flag)
+    function restart() {
+      clearInterval(timer);
+      hobbiesShowcaseDone = false;
+      current = 0;
+      shown   = 0;
+      spotlight(0);
+      startCycle();
+    }
+
+    // Click a tile: focus it AND swap background immediately
     cards.forEach(c => c.addEventListener('click', () => {
+      clearInterval(timer);
       spotlight(parseInt(c.dataset.idx));
+      // restart cycle from clicked tile
+      shown = 1;
+      hobbiesShowcaseDone = false;
+      timer = setInterval(() => {
+        if (shown < TOTAL) {
+          shown++;
+          spotlight(current + 1);
+        } else {
+          clearInterval(timer);
+          hobbiesShowcaseDone = true;
+        }
+      }, HOLD_MS);
     }));
 
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
-        if (e.isIntersecting && !running) {
+        if (e.isIntersecting) {
+          // Always restart when section comes into view (manual nav or auto)
           running = true;
-          hobbiesShowcaseDone = false;
-          spotlight(0);
-          startCycle();
+          restart();
         }
         if (!e.isIntersecting) {
           running = false;
           clearInterval(timer);
           cards.forEach(c => c.classList.remove('spotlight'));
-          const meta = SECTION_META['hobbies'];
-          setBackground(meta.url, meta.label);
         }
       });
     }, { threshold: 0.3 });
