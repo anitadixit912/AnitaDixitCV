@@ -1245,13 +1245,16 @@
   /* ═══════════════════════════════════════════════════════
      HOBBY SPOTLIGHT — highlight one tile at a time + bg swap
   ═══════════════════════════════════════════════════════ */
+  let hobbiesShowcaseDone = false;
+
   (function initHobbySpotlight() {
-    const cards = Array.from(document.querySelectorAll('.hobby-card[data-idx]'));
+    const cards  = Array.from(document.querySelectorAll('.hobby-card[data-idx]'));
     const TOTAL  = cards.length;
-    const HOLD_MS = 5000;
-    let current = 0;
-    let timer   = null;
-    let running = false;
+    const HOLD_MS = 8000;
+    let current  = 0;
+    let shown    = 0;   // count of distinct tiles shown this cycle
+    let timer    = null;
+    let running  = false;
 
     function spotlight(idx) {
       current = (idx + TOTAL) % TOTAL;
@@ -1263,21 +1266,30 @@
 
     function startCycle() {
       clearInterval(timer);
+      hobbiesShowcaseDone = false;
+      shown = 1; // card 0 already spotlit
       timer = setInterval(() => {
-        spotlight((current + 1) % TOTAL);
+        if (shown < TOTAL) {
+          shown++;
+          spotlight(current + 1);
+        } else {
+          // All tiles have been highlighted — unblock auto-scroll
+          clearInterval(timer);
+          hobbiesShowcaseDone = true;
+        }
       }, HOLD_MS);
     }
 
-    // Click a tile to manually focus it
+    // Click a tile to manually focus it (does not reset done flag)
     cards.forEach(c => c.addEventListener('click', () => {
       spotlight(parseInt(c.dataset.idx));
-      startCycle();
     }));
 
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting && !running) {
           running = true;
+          hobbiesShowcaseDone = false;
           spotlight(0);
           startCycle();
         }
@@ -1541,6 +1553,7 @@
     if (currentSection === 'experience' && !expShowcaseDone) return;
     if (currentSection === 'skills'     && !skillsShowcaseDone)  return;
     if (currentSection === 'projects'   && !projShowcaseDone)    return;
+    if (currentSection === 'hobbies'    && !hobbiesShowcaseDone) return;
     const idx = sections.findIndex(s => s.id === currentSection);
     const next = sections[idx + 1] || sections[0];
     next.scrollIntoView({ behavior: 'smooth' });
